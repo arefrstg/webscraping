@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
 import re
+import time
 
 '''
 حرکت در صفحات و پیدا کردن صفحه حاضر و اخرین صفحه درست شد 
@@ -88,6 +89,7 @@ while True:
             page_url = a['href']
             url_page_book = f'{website}{page_url}'
             #find the data table
+            time.sleep(1)
             site_details_book = set_url('get', url_page_book)
             soup_details = BeautifulSoup(site_details_book.text , 'html.parser')
             info_table = str(soup_details.find_all('table', attrs={'class' : 'product-table'}))
