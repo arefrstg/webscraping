@@ -14,6 +14,7 @@ count_req = 0
 
 
 cnx= mysql.connector.connect(user='root', password='AaA123456789@', host='127.0.0.1')
+cursor = cnx.cursor()
 
 
 # url section
@@ -78,11 +79,11 @@ while True:
         link_product = str(soup.find_all('h4', attrs={'class': 'product-name-title'}))
         soup_sub_2 = BeautifulSoup(link_product, 'html.parser')
         link_product = soup_sub_2.find_all('a', href=True)
-        cursor = cnx.cursor()
+
         cursor.execute("select cat_url from web_data.category where cat_url = '%s' ;" %category_url)
         for a in cursor:
             temp =a[0]
-        cursor.close()
+
         if temp != category_url:
             cursor = cnx.cursor()
             cursor.execute("insert into web_data.category ( cat_title, cat_url, maxpage_done) values ('%s','%s','%s');" % (title_category,category_url,str(max_page)) )
@@ -90,13 +91,13 @@ while True:
             cursor.execute("select cat_id from web_data.category where cat_url = '%s' ;" % category_url)
             for id in cursor:
                 category_id = id
-            cursor.close()
+
         else:
             cursor = cnx.cursor()
             cursor.execute("SELECT * FROM web_data.category ORDER BY cat_id DESC LIMIT 1")
             for id in cursor:
                 category_id = id
-            cursor.close()
+
 
 
 
@@ -181,7 +182,7 @@ while True:
                         elif pointer == "زودترین زمان ارسال":
                             end = True
                         limit_loop += 2
-                    cursor = cnx.cursor()
+
                     cursor.execute("select book_id from web_data.iranketab_books where book_id = '%i';" % int(book_id))
                     for id in cursor:
                         temp = id[0]
@@ -194,9 +195,7 @@ while True:
                         cursor.execute("insert into web_data.iranketab_books (book_id, book_category_id, book_name, book_shabak, book_pages, book_publish_date,book_price, book_translater, book_group)"
                                        " values ('%s','%i','%s','%s','%s','%s','%i','%s','%s');" %(book_id,temp,title,shabak1,page_count,date,price,translater,'0'))
                         cnx.commit()
-                        cursor.close()
-                    else:
-                        cursor.close()
+
                     count += 1
                     list_translater = []
                     translater = ''
@@ -299,7 +298,7 @@ while True:
                         print(list_pagecount_main[index])
                         print(list_date_main[index])
                         print("__________________________________________")
-                        cursor = cnx.cursor()
+
                         cursor.execute("select book_id from web_data.iranketab_books where book_id = '%i';" % int(list_codebook_main[index]))
                         for id in cursor:
                             temp = id[0]
@@ -313,9 +312,7 @@ while True:
                                            " values ('%s','%i','%s','%s','%s','%s','%i','%s','%s');"
                                            %(list_codebook_main[index],temp,list_title_main[index],list_shabak_main[index],list_pagecount_main[index],list_date_main[index],list_price_main[index],list_translater_main[index],list_codebook_main[0]))
                             cnx.commit()
-                            cursor.close()
-                        else:
-                            cursor.close()
+
                         list_translater = []
                         translater = ''
                         count_req += 1
@@ -331,4 +328,5 @@ while True:
             site = set_url('post', dic_page_ajax[str(current_page)] , fake_header_dict)
             print(site.text)
             soup = BeautifulSoup(site.text, 'html.parser')
-
+cursor.close()
+cnx.close()
