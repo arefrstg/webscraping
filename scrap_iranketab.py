@@ -13,7 +13,7 @@ list_translater = []
 count_req = 0
 
 
-# cnx= mysql.connector.connect(user='root', password='AaA123456789@', host='127.0.0.1')
+cnx= mysql.connector.connect(user='root', password='AaA123456789@', host='127.0.0.1')
 
 
 # url section
@@ -67,6 +67,7 @@ index_loop = 0
 title_category = soup.find("span", attrs={"class": "brief-header-name"}).text
 title_category = title_category.replace('کتاب های   ', '').strip().lstrip().rstrip()
 print(title_category)
+category_id = 0
 while True:
 
     if current_page > max_page:
@@ -77,16 +78,30 @@ while True:
         link_product = str(soup.find_all('h4', attrs={'class': 'product-name-title'}))
         soup_sub_2 = BeautifulSoup(link_product, 'html.parser')
         link_product = soup_sub_2.find_all('a', href=True)
-        # cursor = cnx.cursor()
-        # cursor.execute("select cat_url from web_data.category where cat_url = '%s' ;" %category_url)
-        # for a in cursor:
-        #     temp =a[0]
-        # cursor.close()
-        # if temp != category_url:
-        #     cursor = cnx.cursor()
-        #     cursor.execute("insert into web_data.category ( cat_title, cat_url, maxpage_done) values ('%s','%s','%s');" % (title_category,category_url,str(max_page)) )
-        #     cnx.commit()
-        #     cursor.close()
+        cursor = cnx.cursor()
+        cursor.execute("select cat_url from web_data.category where cat_url = '%s' ;" %category_url)
+        for a in cursor:
+            temp =a[0]
+        cursor.close()
+        if temp != category_url:
+            cursor = cnx.cursor()
+            cursor.execute("insert into web_data.category ( cat_title, cat_url, maxpage_done) values ('%s','%s','%s');" % (title_category,category_url,str(max_page)) )
+            cnx.commit()
+            cursor.execute("select cat_id from web_data.category where cat_url = '%s' ;" % category_url)
+            for id in cursor:
+                category_id = id
+            cursor.close()
+        else:
+            cursor = cnx.cursor()
+            cursor.execute("SELECT * FROM web_data.category ORDER BY cat_id DESC LIMIT 1")
+            for id in cursor:
+                category_id = id
+            cursor.close()
+
+
+
+
+
         count_req = 0
         fake_header = FakeHttpHeader()
         fake_header_dict = fake_header.as_header_dict()
@@ -100,13 +115,13 @@ while True:
             end = False
             # this is where we enter every page to extract the data
             page_url = a['href']
-            #url_page_book = f'{website}{page_url}'
-            url_page_book = "https://www.iranketab.ir/book/2239-tarikh-i-bayhaqi"
+            url_page_book = f'{website}{page_url}'
+            #url_page_book = "https://www.iranketab.ir/book/2239-tarikh-i-bayhaqi"
 
             # find the data table
-            time.sleep(4)
+            time.sleep(3)
             site_details_book = set_url('get', url_page_book , fake_header_dict)
-            time.sleep(4)
+            time.sleep(3)
             soup_details = BeautifulSoup(site_details_book.text, 'html.parser')
             info_table = soup_details.find_all('table', attrs={"class": "product-table"})
             # this is where we check if the page have more than one book
@@ -166,22 +181,22 @@ while True:
                         elif pointer == "زودترین زمان ارسال":
                             end = True
                         limit_loop += 2
-                    # cursor = cnx.cursor()
-                    # cursor.execute("select book_id from web_data.iranketab_books where book_id = '%i';" % int(book_id))
-                    # for id in cursor:
-                    #     temp = id[0]
-                    #
-                    # if temp != int(book_id):
-                    #
-                    #     cursor.execute("select cat_id from web_data.category where cat_url = '%s';" % category_url)
-                    #     for cat_id in cursor:
-                    #         temp = int(cat_id[0])
-                    #     cursor.execute("insert into web_data.iranketab_books (book_id, book_category_id, book_name, book_shabak, book_pages, book_publish_date,book_price, book_translater, book_group)"
-                    #                    " values ('%s','%i','%s','%s','%s','%s','%i','%s','%s');" %(book_id,temp,title,shabak1,page_count,date,price,translater,'0'))
-                    #     cnx.commit()
-                    #     cursor.close()
-                    # else:
-                    #     cursor.close()
+                    cursor = cnx.cursor()
+                    cursor.execute("select book_id from web_data.iranketab_books where book_id = '%i';" % int(book_id))
+                    for id in cursor:
+                        temp = id[0]
+
+                    if temp != int(book_id):
+
+                        cursor.execute("select cat_id from web_data.category where cat_url = '%s';" % category_url)
+                        for cat_id in cursor:
+                            temp = int(cat_id[0])
+                        cursor.execute("insert into web_data.iranketab_books (book_id, book_category_id, book_name, book_shabak, book_pages, book_publish_date,book_price, book_translater, book_group)"
+                                       " values ('%s','%i','%s','%s','%s','%s','%i','%s','%s');" %(book_id,temp,title,shabak1,page_count,date,price,translater,'0'))
+                        cnx.commit()
+                        cursor.close()
+                    else:
+                        cursor.close()
                     count += 1
                     list_translater = []
                     translater = ''
@@ -266,7 +281,7 @@ while True:
                             elif pointer == "زودترین زمان ارسال":
                                 end = True
                             limit_loop += 2
-                    # to do / bug of the translate poision
+
                     print(list_translater_main)
                     for item in range(0 , len(list_translater_check)):
                         if list_translater_check[item] == 0:
@@ -284,9 +299,27 @@ while True:
                         print(list_pagecount_main[index])
                         print(list_date_main[index])
                         print("__________________________________________")
+                        cursor = cnx.cursor()
+                        cursor.execute("select book_id from web_data.iranketab_books where book_id = '%i';" % int(list_codebook_main[index]))
+                        for id in cursor:
+                            temp = id[0]
+
+                        if temp != int(list_codebook_main[index]):
+
+                            cursor.execute("select cat_id from web_data.category where cat_url = '%s';" % category_url)
+                            for cat_id in cursor:
+                                temp = int(cat_id[0])
+                            cursor.execute("insert into web_data.iranketab_books (book_id, book_category_id, book_name, book_shabak, book_pages, book_publish_date,book_price, book_translater, book_group)"
+                                           " values ('%s','%i','%s','%s','%s','%s','%i','%s','%s');"
+                                           %(list_codebook_main[index],temp,list_title_main[index],list_shabak_main[index],list_pagecount_main[index],list_date_main[index],list_price_main[index],list_translater_main[index],list_codebook_main[0]))
+                            cnx.commit()
+                            cursor.close()
+                        else:
+                            cursor.close()
                         list_translater = []
                         translater = ''
                         count_req += 1
+
                     print('more than one book in page')
                     count += 1
             else:
