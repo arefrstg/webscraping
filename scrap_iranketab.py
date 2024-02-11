@@ -37,7 +37,8 @@ def set_url(state='', url='', header={}):
 
 
 # find the class for number of pages
-category_url = 'https://www.iranketab.ir/tag/512-best-historical-books?page=1'
+#https://www.iranketab.ir/tag/512-best-historical-books?page=1
+category_url = 'https://www.iranketab.ir/tag/102-romantic-stories'
 site = set_url('get', category_url)
 print(site)
 soup = BeautifulSoup(site.text, 'html.parser')
@@ -67,6 +68,7 @@ count = 0
 index_loop = 0
 title_category = soup.find("span", attrs={"class": "brief-header-name"}).text
 title_category = title_category.replace('کتاب های   ', '').strip().lstrip().rstrip()
+title_category = title_category.replace("'" , "")
 print(title_category)
 category_id = 0
 while True:
@@ -214,6 +216,7 @@ while True:
                     list_pagecount_main = []
                     list_date_main = []
                     title = str(soup_details.find("h1", attrs={"class": "product-name"}).text.lstrip().rstrip().strip())
+                    title = title.replace("'" , "")
                     list_title_main.append(title)
                     title = soup_details.find_all("div", attrs={"class": "product-name"})
                     for t in title:
