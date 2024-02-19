@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 import mysql.connector
 import popup_window
+import scrap_iranketab
 import time
 
 
@@ -32,8 +33,6 @@ def show_data():
 
     for row_data in data:
         tree.insert("", "end", values=row_data)
-
-
 def filter_data(selected_option_price, selected_option_page, selected_option_year):
     if selected_option_price[0] == "بدون فیلتر" and selected_option_page[0] == "بدون فیلتر" and selected_option_year[0] == "بدون فیلتر":
         popup_window.final_text("لطفا فیلتر ها را انتخاب و دوباره دکمه فیلتر را بزنید ")
@@ -58,14 +57,18 @@ def filter_data(selected_option_price, selected_option_page, selected_option_yea
             print(query)
 
         elif selected_option_price != "بدون فیلتر" and selected_option_page != "بدون فیلتر":
-            query = f" SELECT c.cat_title, b.* FROM category c JOIN iranketab_books b ON c.cat_id = b.book_category_id where book_price{selected_option_price[0]} {selected_option_price[1]} and book_pages{selected_option_page[0]} {selected_option_page[1]} ;"
+            query = (f" SELECT c.cat_title, b.* FROM category c JOIN iranketab_books b ON c.cat_id = b.book_category_id "
+                     f"where book_price{selected_option_price[0]} {selected_option_price[1]} and book_pages{selected_option_page[0]} {selected_option_page[1]} ;")
         elif selected_option_price != "بدون فیلتر" and selected_option_year != "بدون فیلتر":
-            query = f" SELECT c.cat_title, b.* FROM category c JOIN iranketab_books b ON c.cat_id = b.book_category_id where book_price{selected_option_price[0]} {selected_option_price[1]} and book_publish_date{selected_option_year[0]} {selected_option_year[1]} ;"
+            query = (f" SELECT c.cat_title, b.* FROM category c JOIN iranketab_books b ON c.cat_id = b.book_category_id where"
+                     f" book_price{selected_option_price[0]} {selected_option_price[1]} and book_publish_date{selected_option_year[0]} {selected_option_year[1]} ;")
 
         elif selected_option_page != "بدون فیلتر" and selected_option_year != "بدون فیلتر":
-            query = f" SELECT c.cat_title, b.* FROM category c JOIN iranketab_books b ON c.cat_id = b.book_category_id where book_pages{selected_option_page[0]} {selected_option_page[1]} and book_publish_date{selected_option_year[0]} {selected_option_year[1]} ;"
+            query = (f" SELECT c.cat_title, b.* FROM category c JOIN iranketab_books b ON c.cat_id = b.book_category_id "
+                     f"where book_pages{selected_option_page[0]} {selected_option_page[1]} and book_publish_date{selected_option_year[0]} {selected_option_year[1]} ;")
         elif selected_option_price != "بدون فیلتر"  and selected_option_page != "بدون فیلتر" and selected_option_year != "بدون فیلتر":
-            query = f" SELECT c.cat_title, b.* FROM category c JOIN iranketab_books b ON c.cat_id = b.book_category_id where book_price{selected_option_price[0]} {selected_option_price[1]} and book_pages{selected_option_page[0]} {selected_option_page[1]} and book_publish_date{selected_option_year[0]} {selected_option_year[1]} ;"
+            query = (f" SELECT c.cat_title, b.* FROM category c JOIN iranketab_books b ON c.cat_id = b.book_category_id where book_price{selected_option_price[0]} {selected_option_price[1]} "
+                     f"and book_pages{selected_option_page[0]} {selected_option_page[1]} and book_publish_date{selected_option_year[0]} {selected_option_year[1]} ;")
         cursor.execute("USE web_data;")
         cursor.execute(query)
         for cat_title, book_id, book_cat_id, name, shabak, pages, date, price, tran, book_group, extra in cursor:
@@ -84,45 +87,38 @@ def filter_data(selected_option_price, selected_option_page, selected_option_yea
 
         for row_data in data:
             tree.insert("", "end", values=row_data)
-
-
 def add_data():
-    # Open the new window
-    progress_window = tk.Toplevel(root)
-    progress_window.title("Add Data")
 
-    # Label
+    progress_window = tk.Toplevel(root)
+    progress_window.title("صفحه اضافه کردن اطلاعات")
+
+
     url_label = tk.Label(progress_window, text="URL:")
     url_label.grid(row=0, column=0, padx=5, pady=5, sticky="w")
+    url_label2 = tk.Label(progress_window, text="لینک دسته بندی مد نظر را وارد کنید ")
+    url_label2.grid(row=3, column=1, padx=5, pady=5, sticky="w")
 
-    # Textbox
+
     url_entry = tk.Entry(progress_window)
     url_entry.grid(row=0, column=1, padx=5, pady=5, sticky="we")
 
-    # Progress bar
-    progress = ttk.Progressbar(progress_window, orient="horizontal", length=200, mode="indeterminate")
-    progress.grid(row=1, column=0, columnspan=2, padx=5, pady=5)
 
-    # Button to start progress bar
-    start_button = tk.Button(progress_window, text="Start", command=lambda: start_progress(progress))
+
+    start_button = tk.Button(progress_window, text="شروع", command=lambda: start_progress(url_entry.get()))
+
     start_button.grid(row=2, column=0, columnspan=2, padx=5, pady=5)
 
 
-def start_progress(progress):
-    progress.start()
-
-
-def fill_progress(progress):
-    for _ in range(100):
-        time.sleep(1)  # Simulate some work
-        progress.step(1)
-        progress.update_idletasks()
-    progress.stop()
-
-
+    def start_progress(url_entry):
+        url_label2.config(text="بعد از کلیک بر روی شروع منتظر بمانید")
+        try:
+            scrap_iranketab.getdata(url_entry)
+        except:
+            popup_window.final_text("لطغا از درستی لینک اطمینان حاصل فرمایید ")
+        url_label2.config(text="اطلاعات با موفقیت وارد شد ")
 def open_price_window():
     price_window = tk.Toplevel(root)
-    price_window.title("filter windows")
+    price_window.title("صفحه فیلتر")
 
     price_label = tk.Label(price_window, text="قیمت")
     price_label.grid(row=0, column=0, padx=5, pady=5, sticky="w")
@@ -156,13 +152,11 @@ def open_price_window():
     year_entry_page = tk.Entry(price_window, validate="key", validatecommand=(vcmd, "%P"))
     year_entry_page.grid(row=2, column=2, columnspan=2, padx=5, pady=5, sticky="we")
 
-    filter_button = tk.Button(price_window, text="Filter",
+    filter_button = tk.Button(price_window, text="نمایش فیلتر",
                               command=lambda: filter_data([selected_option_price.get(), price_entry.get()]
                                                           , [selected_option_page.get(), page_entry.get()]
                                                           , [selected_option_year.get(), year_entry_page.get()]))
     filter_button.grid(row=3, column=0, columnspan=2, pady=10, padx=10)
-
-
 def validate_input(new_value):
     if new_value.isdigit() or new_value == "":
         return True
@@ -171,7 +165,7 @@ def validate_input(new_value):
 
 
 root = tk.Tk()
-root.title("Data Display with Tkinter")
+root.title("صفحه اصلی")
 
 tree = ttk.Treeview(root, columns=("cat_title", "name", "shabak", "page_count", "date", "price", "translator"),
                     show="headings", height=20)
@@ -189,18 +183,15 @@ tree.heading("price", text="قیمت")
 tree.column("price", width=80)
 tree.heading("translator", text="مترجم")
 
-show_data_button = tk.Button(root, text="Show Data", command=show_data)
+show_data_button = tk.Button(root, text="نمایش اطلاعات", command=show_data)
 show_data_button.grid(row=4, column=0, pady=5)
 
-add_data_button = tk.Button(root, text="Add Data", command=add_data)
+add_data_button = tk.Button(root, text="اضافه کردن دسته بندی", command=add_data)
 add_data_button.grid(row=2, column=0, pady=5)
 
-selected_option = tk.StringVar()
-selected_option.set("Option 1")
-dropdown_menu = tk.OptionMenu(root, selected_option, "Option 1", "Option 2", "Option 3")
-dropdown_menu.grid(row=0, column=0, pady=5)
 
-filter_data_button = tk.Button(root, text="Filter Data", command=open_price_window)
+
+filter_data_button = tk.Button(root, text="فیلتر", command=open_price_window)
 filter_data_button.grid(row=1, column=0, pady=5)
 
 root.grid_rowconfigure(1, minsize=20)
