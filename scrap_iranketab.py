@@ -38,7 +38,8 @@ def set_url(state='', url='', header={}):
 
 # find the class for number of pages
 #https://www.iranketab.ir/tag/512-best-historical-books?page=1
-category_url = 'https://www.iranketab.ir/tag/102-romantic-stories'
+#'https://www.iranketab.ir/tag/102-romantic-stories'
+category_url = 'https://www.iranketab.ir/tag/512-best-historical-books?page=1'
 site = set_url('get', category_url)
 print(site)
 soup = BeautifulSoup(site.text, 'html.parser')
@@ -82,23 +83,23 @@ while True:
         soup_sub_2 = BeautifulSoup(link_product, 'html.parser')
         link_product = soup_sub_2.find_all('a', href=True)
 
-        cursor.execute("select cat_url from web_data.category where cat_url = '%s' ;" %category_url)
-        for a in cursor:
-            temp =a[0]
-
-        if temp != category_url:
-            cursor = cnx.cursor()
-            cursor.execute("insert into web_data.category ( cat_title, cat_url, maxpage_done) values ('%s','%s','%s');" % (title_category,category_url,str(max_page)) )
-            cnx.commit()
-            cursor.execute("select cat_id from web_data.category where cat_url = '%s' ;" % category_url)
-            for id in cursor:
-                category_id = id
-
-        else:
-            cursor = cnx.cursor()
-            cursor.execute("SELECT * FROM web_data.category ORDER BY cat_id DESC LIMIT 1")
-            for id in cursor:
-                category_id = id
+        # cursor.execute("select cat_url from web_data.category where cat_url = '%s' ;" %category_url)
+        # for a in cursor:
+        #     temp =a[0]
+        #
+        # if temp != category_url:
+        #     cursor = cnx.cursor()
+        #     cursor.execute("insert into web_data.category ( cat_title, cat_url, maxpage_done) ""values ('%s','%s','%s');" % (title_category,category_url,str(max_page)) )
+        #     cnx.commit()
+        #     cursor.execute("select cat_id from web_data.category where cat_url = '%s' ;" % category_url)
+        #     for id in cursor:
+        #         category_id = id
+        #
+        # else:
+        #     cursor = cnx.cursor()
+        #     cursor.execute("SELECT * FROM web_data.category ORDER BY cat_id DESC LIMIT 1")
+        #     for id in cursor:
+        #         category_id = id
 
 
 
@@ -132,6 +133,7 @@ while True:
                 if len(info_table) <= 1:
                     print(url_page_book)
                     title = str(soup_details.find("h1", attrs={"class": "product-name"}).text)
+                    title = title.replace("'" , "")
                     print(title)
                     if soup_details.find("span", attrs={"class": "price price-special"}).text != None:
                         price = soup_details.find("span", attrs={"class": "price price-special"}).text
@@ -194,8 +196,9 @@ while True:
                         cursor.execute("select cat_id from web_data.category where cat_url = '%s';" % category_url)
                         for cat_id in cursor:
                             temp = int(cat_id[0])
-                        cursor.execute("insert into web_data.iranketab_books (book_id, book_category_id, book_name, book_shabak, book_pages, book_publish_date,book_price, book_translater, book_group)"
-                                       " values ('%s','%i','%s','%s','%s','%s','%i','%s','%s');" %(book_id,temp,title,shabak1,page_count,date,price,translater,'0'))
+                        cursor.execute("insert into web_data.iranketab_books "
+                                       "(book_id, book_category_id, book_name, book_shabak, book_pages, book_publish_date,book_price, book_translater, book_group)"
+                                       " values ('%s','%i','%s','%s','%i','%i','%i','%s','%s');" %(book_id,temp,title,shabak1,int(page_count),int(date),price,translater,'0'))
                         cnx.commit()
 
                     count += 1
@@ -312,8 +315,8 @@ while True:
                             for cat_id in cursor:
                                 temp = int(cat_id[0])
                             cursor.execute("insert into web_data.iranketab_books (book_id, book_category_id, book_name, book_shabak, book_pages, book_publish_date,book_price, book_translater, book_group)"
-                                           " values ('%s','%i','%s','%s','%s','%s','%i','%s','%s');"
-                                           %(list_codebook_main[index],temp,list_title_main[index],list_shabak_main[index],list_pagecount_main[index],list_date_main[index],list_price_main[index],list_translater_main[index],list_codebook_main[0]))
+                                           " values ('%s','%i','%s','%s','%i','%i','%i','%s','%s');"
+                                           %(list_codebook_main[index],temp,list_title_main[index],list_shabak_main[index],int(list_pagecount_main[index]),int(list_date_main[index]),list_price_main[index],list_translater_main[index],list_codebook_main[0]))
                             cnx.commit()
 
                         list_translater = []
