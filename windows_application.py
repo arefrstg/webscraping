@@ -46,30 +46,31 @@ def filter_data(selected_option_price, selected_option_page, selected_option_yea
         if selected_option_price[0] != "بدون فیلتر":
             selected_option_price[1] = int(selected_option_price[1])
             query = f" SELECT c.cat_title, b.* FROM category c JOIN iranketab_books b ON c.cat_id = b.book_category_id where book_price{selected_option_price[0]} {selected_option_price[1]} ;"
-        elif selected_option_page[0] != "بدون فیلتر":
+        if selected_option_page[0] != "بدون فیلتر":
             selected_option_page[1] = int(selected_option_page[1])
             query = f" SELECT c.cat_title, b.* FROM category c JOIN iranketab_books b ON c.cat_id = b.book_category_id where book_pages{selected_option_page[0]} {selected_option_page[1]} ;"
 
-        elif selected_option_year[0] != "بدون فیلتر":
+        if selected_option_year[0] != "بدون فیلتر":
             selected_option_year[1] = int(selected_option_year[1])
 
             query = f" SELECT c.cat_title, b.* FROM category c JOIN iranketab_books b ON c.cat_id = b.book_category_id where book_publish_date{selected_option_year[0]} {selected_option_year[1]} ;"
             print(query)
 
-        elif selected_option_price != "بدون فیلتر" and selected_option_page != "بدون فیلتر":
+        if selected_option_price[0] != "بدون فیلتر" and selected_option_page[0] != "بدون فیلتر":
             query = (f" SELECT c.cat_title, b.* FROM category c JOIN iranketab_books b ON c.cat_id = b.book_category_id "
                      f"where book_price{selected_option_price[0]} {selected_option_price[1]} and book_pages{selected_option_page[0]} {selected_option_page[1]} ;")
-        elif selected_option_price != "بدون فیلتر" and selected_option_year != "بدون فیلتر":
+        if selected_option_price[0] != "بدون فیلتر" and selected_option_year[0] != "بدون فیلتر":
             query = (f" SELECT c.cat_title, b.* FROM category c JOIN iranketab_books b ON c.cat_id = b.book_category_id where"
                      f" book_price{selected_option_price[0]} {selected_option_price[1]} and book_publish_date{selected_option_year[0]} {selected_option_year[1]} ;")
 
-        elif selected_option_page != "بدون فیلتر" and selected_option_year != "بدون فیلتر":
+        if selected_option_page[0] != "بدون فیلتر" and selected_option_year[0] != "بدون فیلتر":
             query = (f" SELECT c.cat_title, b.* FROM category c JOIN iranketab_books b ON c.cat_id = b.book_category_id "
                      f"where book_pages{selected_option_page[0]} {selected_option_page[1]} and book_publish_date{selected_option_year[0]} {selected_option_year[1]} ;")
-        elif selected_option_price != "بدون فیلتر"  and selected_option_page != "بدون فیلتر" and selected_option_year != "بدون فیلتر":
+        if selected_option_price[0] != "بدون فیلتر"  and selected_option_page[0] != "بدون فیلتر" and selected_option_year[0] != "بدون فیلتر":
             query = (f" SELECT c.cat_title, b.* FROM category c JOIN iranketab_books b ON c.cat_id = b.book_category_id where book_price{selected_option_price[0]} {selected_option_price[1]} "
                      f"and book_pages{selected_option_page[0]} {selected_option_page[1]} and book_publish_date{selected_option_year[0]} {selected_option_year[1]} ;")
         cursor.execute("USE web_data;")
+        print(query)
         cursor.execute(query)
         for cat_title, book_id, book_cat_id, name, shabak, pages, date, price, tran, book_group, extra in cursor:
             name = str(name).lstrip().rstrip().strip()
